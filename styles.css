@@ -530,6 +530,7 @@ textarea:focus {
 
 .video-reveal .video-container .video-frame.active {
   display: block;
+  pointer-events: none;
 }
 
 .video-reveal .video-container .answer-thumb.hidden,

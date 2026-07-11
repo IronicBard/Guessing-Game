@@ -418,7 +418,7 @@ $("#answerVideoContainer").addEventListener("click", function () {
     frame.width = "100%";
     frame.height = "100%";
     frame.allow = "autoplay; encrypted-media";
-    frame.allowFullscreen = true;
+    // Блокируем fullscreen через атрибут
     this.appendChild(frame);
   }
 
@@ -427,10 +427,10 @@ $("#answerVideoContainer").addEventListener("click", function () {
   if (overlay) overlay.classList.add("hidden");
   frame.classList.add("active");
 
-  // Запускаем плеер с autoplay=1 — controls=0 убирает интерфейс YouTube
+  // Запускаем плеер с autoplay=1 — всё взаимодействие заблокировано
   const start = round.start;
   const end = round.end;
-  frame.src = `https://www.youtube.com/embed/${round.video.id}?autoplay=1&controls=0&start=${start}&end=${end}&rel=0&modestbranding=1&iv_load_policy=3`;
+  frame.src = `https://www.youtube.com/embed/${round.video.id}?autoplay=1&controls=0&start=${start}&end=${end}&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&loop=0`;
 
   state.answerVideoPlayed = true;
 
