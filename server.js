@@ -321,6 +321,33 @@ async function handleApi(req, res, url) {
       return;
     }
 
+    const leaveMatch = url.pathname.match(/^\/api\/rooms\/([A-Z0-9]+)\/leave$/);
+    if (req.method === "POST" && leaveMatch) {
+      const room = requireRoom(leaveMatch[1]);
+      room.lastActivity = Date.now();
+      const body = await readBody(req);
+      const playerIndex = room.players.findIndex((p) => p.id === body.playerId);
+      if (playerIndex === -1) throw httpError("Игрок не найден в комнате.", 403);
+      
+      const leavingPlayer = room.players[playerIndex];
+      room.players.splice(playerIndex, 1);
+      
+      // Если хост покинул комнату, передаем хостство следующему игроку
+      if (room.hostId === leavingPlayer.id) {
+        if (room.players.length > 0) {
+          room.hostId = room.players[0].id;
+        }
+      }
+      
+      // Если комната пуста, удаляем её
+      if (room.players.length === 0) {
+        rooms.delete(room.code);
+      }
+      
+      sendJson(res, 200, { room: room.players.length > 0 ? publicRoom(room) : null });
+      return;
+    }
+
     sendJson(res, 404, { error: "Маршрут не найден." });
   } catch (error) {
     sendJson(res, error.status || 500, { error: error.message || "Ошибка сервера." });

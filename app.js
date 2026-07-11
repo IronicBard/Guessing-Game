@@ -117,6 +117,20 @@ function clearSession() {
   showScreen("home");
 }
 
+async function leaveLobby() {
+  if (!state.roomCode || !state.playerId) return;
+  try {
+    await api(`/api/rooms/${state.roomCode}/leave`, {
+      method: "POST",
+      body: { playerId: state.playerId },
+    });
+    clearSession();
+  } catch (error) {
+    // Если комната удалена, все равно очищаем сессию
+    clearSession();
+  }
+}
+
 function startPolling() {
   stopPolling();
   fetchRoom();
@@ -649,6 +663,8 @@ $("#settingsModal").addEventListener("click", (e) => {
 });
 
 $("#leaveBtn").addEventListener("click", clearSession);
+
+$("#leaveLobbyBtn").addEventListener("click", leaveLobby);
 
 $("#playAgainBtn").addEventListener("click", async () => {
   try {
