@@ -495,13 +495,15 @@ function extractVideoId(value) {
 function scoreAnswer(answer, title) {
   const cleanAnswer = answer.trim().toLowerCase();
   const cleanTitle = title.trim().toLowerCase();
-  if (cleanAnswer === cleanTitle) return 10;
+  if (cleanAnswer === cleanTitle) return 100;
+  
   const answerWords = normalizeText(answer);
   const titleWords = normalizeText(title);
   if (!answerWords.length || !titleWords.length) return 0;
+  
   const titleSet = new Set(titleWords);
   const matches = answerWords.filter((word) => titleSet.has(word)).length;
-  return Math.min(9, Math.round((matches / titleWords.length) * 10));
+  return Math.round((matches / titleWords.length) * 100);
 }
 
 function normalizeText(value) {
