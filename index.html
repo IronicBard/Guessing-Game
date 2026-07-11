@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guessing Game</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">YouTube audio party</p>
+          <h1>Guessing Game</h1>
+        </div>
+        <div class="room-pill">
+          <span>Комната</span>
+          <strong id="activeRoomCode">----</strong>
+        </div>
+      </header>
+
+      <section id="homeScreen" class="screen screen-active">
+        <div class="workspace centered">
+          <section class="panel hero-panel">
+            <p class="eyebrow">YouTube Guessing Game</p>
+            <h2>Угадывайте видео по 30 секундам аудио</h2>
+            <form id="homeForm" class="stack-form">
+              <label>
+                Ваше имя
+                <input id="playerNameInput" maxlength="18" placeholder="Player1" required />
+              </label>
+              <div id="joinCodeContainer" style="display: none;">
+                <label>
+                  Код комнаты
+                  <input id="joinCodeInput" maxlength="5" placeholder="A7F4D" required />
+                </label>
+              </div>
+              <div class="button-row">
+                <button id="createBtn" class="primary-btn" type="button">Создать лобби</button>
+                <button id="joinBtn" class="secondary-btn" type="button">Присоединиться</button>
+              </div>
+              <button id="submitHomeBtn" class="primary-btn" type="submit" style="display: none;">Готово</button>
+            </form>
+            <p id="homeMessage" class="message"></p>
+          </section>
+        </div>
+      </section>
+
+      <section id="lobbyScreen" class="screen">
+        <div class="workspace two-column">
+          <section class="panel">
+            <div class="lobby-header">
+              <div class="lobby-title-section">
+                <p class="eyebrow">Этап 1</p>
+                <h2>Лобби</h2>
+              </div>
+              <div class="lobby-code-section">
+                <span class="room-code-label">Комната:</span>
+                <strong id="lobbyTitleCode">#-----</strong>
+                <button id="copyCodeBtn" class="icon-btn copy-btn" type="button" title="Копировать код">📋</button>
+              </div>
+            </div>
+            <p class="lead">Игроки подключаются по коду. Создатель уже в списке и может начать подготовку, когда набралось 2–4 игрока.</p>
+            <div class="button-row">
+              <button id="startPrepBtn" class="primary-btn" type="button">Начать игру</button>
+              <button id="settingsBtn" class="secondary-btn" type="button">Настройки</button>
+            </div>
+            <p id="lobbyMessage" class="message"></p>
+          </section>
+
+          <aside class="panel roster-panel">
+            <div class="panel-title-row">
+              <div>
+                <p class="eyebrow">Лобби</p>
+                <h2 id="lobbyTitle">#-----</h2>
+              </div>
+              <strong id="playerCount">0 / 4</strong>
+            </div>
+            <h3>Игроки</h3>
+            <ul id="lobbyPlayers" class="player-list"></ul>
+          </aside>
+        </div>
+      </section>
+
+      <section id="settingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Настройки игры</h2>
+            <button id="closeSettingsBtn" class="close-btn" type="button">✕</button>
+          </div>
+          <div class="modal-body">
+            <fieldset class="settings-group">
+              <legend>Длительность аудиоотрывка</legend>
+              <label class="radio-line">
+                <input type="radio" name="clipDuration" value="15" />
+                15 секунд (сложно)
+              </label>
+              <label class="radio-line">
+                <input type="radio" name="clipDuration" value="20" />
+                20 секунд
+              </label>
+              <label class="radio-line">
+                <input type="radio" name="clipDuration" value="25" />
+                25 секунд
+              </label>
+              <label class="radio-line">
+                <input type="radio" name="clipDuration" value="30" checked />
+                30 секунд (обычно)
+              </label>
+            </fieldset>
+          </div>
+          <div class="modal-footer">
+            <button id="saveSettingsBtn" class="primary-btn" type="button">Сохранить</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="prepareScreen" class="screen">
+        <div class="workspace two-column">
+          <section class="panel">
+            <p class="eyebrow">Этап 2</p>
+            <h2>Подготовка раунда</h2>
+            <p class="lead">Ваш выбор скрыт. Остальные видят только статус готовности.</p>
+            <form id="prepareForm" class="stack-form">
+              <fieldset class="choice-box">
+                <legend>Источник</legend>
+                <label class="radio-line">
+                  <input type="radio" name="sourceMode" value="channel" checked />
+                  Никнейм или название ютубера
+                </label>
+                <label class="radio-line">
+                  <input type="radio" name="sourceMode" value="video" />
+                  Ссылка на конкретный ролик
+                </label>
+              </fieldset>
+              <label>
+                Данные для раунда
+                <input id="sourceInput" maxlength="160" placeholder="MrBeast" required />
+              </label>
+              <button id="submitSourceBtn" class="primary-btn" type="submit">Готов</button>
+            </form>
+            <p id="prepareMessage" class="message"></p>
+          </section>
+
+          <aside class="panel roster-panel">
+            <div class="panel-title-row">
+              <div>
+                <p class="eyebrow">Ожидание</p>
+                <h2>Статусы</h2>
+              </div>
+              <span id="prepareCount">0 / 4</span>
+            </div>
+            <ul id="preparePlayers" class="player-list"></ul>
+          </aside>
+        </div>
+      </section>
+
+      <section id="generatingScreen" class="screen">
+        <div class="workspace centered">
+          <section class="panel generating-panel">
+            <div class="spinner" aria-hidden="true"></div>
+            <p class="eyebrow">YouTube API</p>
+            <h2>Собираем ролики</h2>
+            <p id="generationText" class="lead">Ищем каналы, берём последние видео и выбираем случайные фрагменты.</p>
+          </section>
+        </div>
+      </section>
+
+      <section id="listenScreen" class="screen">
+        <div class="workspace two-column">
+          <section class="panel listen-panel">
+            <div class="round-meta">
+              <span id="listenLabel">Раунд 1</span>
+              <span id="listenProgress">1 / 4</span>
+            </div>
+            <div class="audio-stage">
+              <div id="disc" class="disc" aria-hidden="true"><span></span></div>
+              <div class="timer">
+                <strong id="timeLeft">30</strong>
+                <span>секунд</span>
+              </div>
+            </div>
+            <div class="progress-track"><div id="timeBar" class="progress-fill"></div></div>
+            <div class="button-row">
+              <button id="playClipBtn" class="primary-btn" type="button">Слушать</button>
+              <button id="replayClipBtn" class="secondary-btn" type="button" disabled>Ещё раз</button>
+            </div>
+            <div id="youtubeMount" class="youtube-mount" aria-hidden="true"></div>
+          </section>
+
+          <aside class="panel">
+            <p class="eyebrow">Этап 3</p>
+            <h2>Прослушивание</h2>
+            <p class="lead">Видео и название скрыты. После фрагмента откроется поле ответа.</p>
+            <ul id="listenPlayers" class="player-list"></ul>
+          </aside>
+        </div>
+      </section>
+
+      <section id="guessScreen" class="screen">
+        <div class="workspace two-column">
+          <section class="panel">
+            <p class="eyebrow">Этап 4</p>
+            <h2>Ваш ответ</h2>
+            <form id="guessForm" class="stack-form">
+              <label>
+                Как называется это видео?
+                <textarea id="guessInput" rows="4" placeholder="Я прожил 24 часа в лесу" required></textarea>
+              </label>
+              <button id="submitGuessBtn" class="primary-btn" type="submit">Отправить</button>
+            </form>
+            <p id="guessMessage" class="message"></p>
+          </section>
+
+          <aside class="panel roster-panel">
+            <div class="panel-title-row">
+              <div>
+                <p class="eyebrow">Ожидание</p>
+                <h2>Ответы</h2>
+              </div>
+              <span id="guessCount">0 / 4</span>
+            </div>
+            <ul id="guessPlayers" class="player-list"></ul>
+          </aside>
+        </div>
+      </section>
+
+      <section id="answerScreen" class="screen">
+        <div class="workspace review-layout">
+          <section class="panel review-panel">
+            <div class="round-meta">
+              <span id="answerLabel">Ответы</span>
+              <span id="answerProgress">1 / 4</span>
+            </div>
+            <div class="video-reveal">
+              <img id="answerThumb" alt="Превью видео" />
+              <div>
+                <p class="eyebrow">Правильный ответ</p>
+                <h2 id="realTitle"></h2>
+                <a id="videoLink" target="_blank" rel="noreferrer">Открыть видео</a>
+              </div>
+            </div>
+            <div class="clip-line">
+              <span id="clipInfo"></span>
+              <button id="nextRoundBtn" class="primary-btn" type="button">Следующий ролик</button>
+            </div>
+            <ul id="roundAnswers" class="review-answers"></ul>
+          </section>
+        </div>
+      </section>
+
+      <section id="finalScreen" class="screen">
+        <div class="workspace centered">
+          <section class="panel final-panel">
+            <p class="eyebrow">Итоговая таблица</p>
+            <h2 id="winnerTitle">Победитель</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Место</th>
+                  <th>Игрок</th>
+                  <th>Очки</th>
+                </tr>
+              </thead>
+              <tbody id="scoreTable"></tbody>
+            </table>
+            <div class="button-row">
+              <button id="playAgainBtn" class="primary-btn" type="button">Ещё раз</button>
+              <button id="leaveBtn" class="secondary-btn" type="button">На главный экран</button>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

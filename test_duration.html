@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Test Clip Duration</title>
+</head>
+<body>
+  <h1>Тест длительности клипа</h1>
+  <p>Проверьте консоль браузера (F12) при выборе длительности и клике "Слушать"</p>
+  
+  <h2>Текущая длительность (из localStorage): <span id="currentDuration">30</span></h2>
+  
+  <div>
+    <label><input type="radio" name="clipDuration" value="15" /> 15 сек</label>
+    <label><input type="radio" name="clipDuration" value="20" /> 20 сек</label>
+    <label><input type="radio" name="clipDuration" value="25" /> 25 сек</label>
+    <label><input type="radio" name="clipDuration" value="30" checked /> 30 сек</label>
+  </div>
+  
+  <button id="saveSettingsBtn">Сохранить</button>
+  <button id="playClipBtn">Слушать</button>
+  
+  <div id="log"></div>
+  
+  <script src="app.js"></script>
+  <script>
+    // Переопределим функции для теста без DOM
+    const $ = (selector) => document.querySelector(selector);
+    
+    // Слушатели для теста
+    document.querySelectorAll('input[name="clipDuration"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        console.log("Выбрана длительность:", input.value);
+      });
+    });
+    
+    $("#saveSettingsBtn").addEventListener("click", () => {
+      const selected = document.querySelector('input[name="clipDuration"]:checked');
+      if (selected) {
+        console.log("Сохранено:", selected.value);
+        document.getElementById("currentDuration").textContent = selected.value;
+      }
+    });
+    
+    $("#playClipBtn").addEventListener("click", () => {
+      console.log("Клик "Слушать": state.clipDuration =", state.clipDuration);
+    });
+  </script>
+</body>
+</html>
