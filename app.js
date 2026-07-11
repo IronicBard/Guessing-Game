@@ -14,6 +14,8 @@ const state = {
   clipDoneSent: false,
   mode: "create", // "create" or "join"
   clipDuration: 30, // в секундах
+  answerVideoPlayed: false, // был ли уже проигран плеер на экране ответов
+  answerVideoTimerId: null, // таймер для автовозврата к превью
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -331,14 +333,50 @@ function renderAnswer(room) {
   stopTimer();
   
   const round = room.rounds[room.currentRound];
+  const videoContainer = $("#answerVideoContainer");
+  const thumb = $("#answerThumb");
+
   if (state.answerShownForRound !== room.currentRound) {
     state.answerShownForRound = room.currentRound;
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Сброс состояния плеера для нового раунда
+    state.answerVideoPlayed = false;
+    if (state.answerVideoTimerId) {
+      clearTimeout(state.answerVideoTimerId);
+      state.answerVideoTimerId = null;
+    }
+
+    // Устанавливаем превьюшку
+    thumb.src = round.video.thumbnail;
+    thumb.classList.remove("hidden");
+    thumb.style.display = "";
+
+    // Удаляем старый плеер и оверлей, создаём заново
+    const oldFrame = videoContainer.querySelector(".video-frame");
+    if (oldFrame) oldFrame.remove();
+    const oldOverlay = videoContainer.querySelector(".play-overlay");
+    if (oldOverlay) oldOverlay.remove();
+
+    // Создаём play-оверлей
+    const overlay = document.createElement("div");
+    overlay.className = "play-overlay";
+    overlay.innerHTML = '<div class="play-triangle"></div>';
+    videoContainer.appendChild(overlay);
+    
+    // iframe НЕ создаём заранее — создадим по клику
+  }
+
+  // Если видео уже было проиграно — показываем превью и блокируем
+  if (state.answerVideoPlayed) {
+    thumb.classList.remove("hidden");
+    thumb.style.display = "";
+    const overlay = videoContainer.querySelector(".play-overlay");
+    if (overlay) overlay.classList.add("hidden");
   }
 
   $("#answerLabel").textContent = `Раунд ${room.currentRound + 1}`;
   $("#answerProgress").textContent = `${room.currentRound + 1} / ${room.rounds.length}`;
-  $("#answerThumb").src = round.video.thumbnail;
   $("#realTitle").textContent = round.video.title;
   $("#videoLink").href = `https://www.youtube.com/watch?v=${round.video.id}&t=${round.start}s`;
   $("#clipInfo").textContent = `${round.video.channelTitle}: ${formatTime(round.start)}-${formatTime(round.end)}`;
@@ -361,6 +399,51 @@ function renderAnswer(room) {
     })
     .join("");
 }
+
+// Клик по контейнеру видео — запуск плеера (только если ещё не играли)
+$("#answerVideoContainer").addEventListener("click", function () {
+  if (state.answerVideoPlayed) return;
+  const round = state.room?.rounds[state.room.currentRound];
+  if (!round) return;
+
+  const thumb = $("#answerThumb");
+  const overlay = this.querySelector(".play-overlay");
+
+  // Создаём iframe прямо по клику (user gesture для autoplay)
+  let frame = this.querySelector(".video-frame");
+  if (!frame) {
+    frame = document.createElement("iframe");
+    frame.className = "video-frame";
+    frame.title = "YouTube video player";
+    frame.width = "100%";
+    frame.height = "100%";
+    frame.allow = "autoplay; encrypted-media";
+    frame.allowFullscreen = true;
+    this.appendChild(frame);
+  }
+
+  // Прячем превью и оверлей, показываем плеер с автозапуском
+  thumb.classList.add("hidden");
+  if (overlay) overlay.classList.add("hidden");
+  frame.classList.add("active");
+
+  // Запускаем плеер с autoplay=1 — controls=1 обязателен для показа видео
+  const start = round.start;
+  const end = round.end;
+  frame.src = `https://www.youtube.com/embed/${round.video.id}?autoplay=1&controls=1&start=${start}&end=${end}&rel=0&modestbranding=1&iv_load_policy=3`;
+
+  state.answerVideoPlayed = true;
+
+  // Таймер на длительность клипа — возвращаем превью
+  state.answerVideoTimerId = setTimeout(() => {
+    frame.classList.remove("active");
+    frame.src = `https://www.youtube.com/embed/${round.video.id}?autoplay=0&controls=1&start=${start}&rel=0&modestbranding=1&iv_load_policy=3`;
+    thumb.classList.remove("hidden");
+    thumb.style.display = "";
+    if (overlay) overlay.classList.add("hidden"); // оверлей не показываем — blocked
+    state.answerVideoTimerId = null;
+  }, state.clipDuration * 1000);
+});
 
 function renderFinal(room) {
   showScreen("final");
@@ -620,6 +703,11 @@ $("#nextRoundBtn").addEventListener("click", async () => {
     state.currentVideoId = null;
     state.currentStart = null;
     state.clipDoneSent = false;
+    state.answerVideoPlayed = false;
+    if (state.answerVideoTimerId) {
+      clearTimeout(state.answerVideoTimerId);
+      state.answerVideoTimerId = null;
+    }
     youtubeMount.innerHTML = "";
     fetchRoom();
   } catch (error) {
@@ -677,6 +765,11 @@ $("#playAgainBtn").addEventListener("click", async () => {
     state.currentVideoId = null;
     state.currentStart = null;
     state.clipDoneSent = false;
+    state.answerVideoPlayed = false;
+    if (state.answerVideoTimerId) {
+      clearTimeout(state.answerVideoTimerId);
+      state.answerVideoTimerId = null;
+    }
     youtubeMount.innerHTML = "";
     fetchRoom();
   } catch (error) {
