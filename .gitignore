@@ -9,3 +9,5 @@
 /dataSources/
 /dataSources.local.xml
 .env
+node_modules/
+.idea/
