@@ -752,7 +752,14 @@ $("#settingsModal").addEventListener("click", (e) => {
 
 $("#leaveBtn").addEventListener("click", clearSession);
 
-$("#leaveLobbyBtn").addEventListener("click", leaveLobby);
+$("#leaveLobbyBtn").addEventListener("click", () => {
+  $("#confirmLeaveLobbyBtn").style.display = "inline-block";
+});
+
+$("#confirmLeaveLobbyBtn").addEventListener("click", () => {
+  $("#confirmLeaveLobbyBtn").style.display = "none";
+  leaveLobby();
+});
 
 $("#playAgainBtn").addEventListener("click", async () => {
   try {

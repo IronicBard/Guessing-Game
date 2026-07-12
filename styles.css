@@ -240,6 +240,25 @@ textarea:focus {
   color: var(--ink);
 }
 
+.danger-btn {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-weight: 850;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(226, 61, 69, 0.22);
+}
+
+.danger-btn:hover:not(:disabled) {
+  background: var(--red-dark);
+  transform: translateY(-1px);
+}
+
 .button-row {
   display: flex;
   align-items: center;
