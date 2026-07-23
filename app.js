@@ -507,11 +507,10 @@ function resetTimer() {
   timeLeft.textContent = state.remaining;
   timeBar.style.width = "0%";
   $("#playClipBtn").disabled = false;
-  $("#replayClipBtn").disabled = true;
   state.clipDoneSent = false;
 }
 
-function startTimer(isReplay = false) {
+function startTimer() {
   if (state.timerId) return;
   const round = state.room?.rounds[state.room.currentRound];
   if (!round) {
@@ -522,9 +521,6 @@ function startTimer(isReplay = false) {
   console.log("startTimer: clipDuration =", state.clipDuration, "remaining =", state.remaining);
   console.log("startTimer: videoId =", round.video.id, "start =", round.start);
   
-  if (isReplay) {
-    $("#replayClipBtn").disabled = true;
-  }
   $("#playClipBtn").disabled = true;
   state.remaining = state.clipDuration;
   
@@ -550,7 +546,6 @@ function tickTimer() {
     youtubeMount.innerHTML = "";
     state.currentVideoId = null;
     state.currentStart = null;
-    $("#replayClipBtn").disabled = false;
     
     finishListening();
     return;
@@ -721,8 +716,7 @@ $("#prepareForm").addEventListener("submit", async (event) => {
   }
 });
 
-$("#playClipBtn").addEventListener("click", () => startTimer(false));
-$("#replayClipBtn").addEventListener("click", () => startTimer(true));
+$("#playClipBtn").addEventListener("click", () => startTimer());
 
 $("#guessForm").addEventListener("submit", async (event) => {
   event.preventDefault();
