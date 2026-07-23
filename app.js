@@ -16,6 +16,7 @@ const state = {
   clipDuration: 30, // в секундах
   answerVideoPlayed: false, // был ли уже проигран плеер на экране ответов
   answerVideoTimerId: null, // таймер для автовозврата к превью
+  lastChatCount: 0,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -239,6 +240,41 @@ function renderPlayers(list, players, statusField = "status") {
     .join("");
 }
 
+function renderChat(room) {
+  const messages = room.messages || [];
+  const chatList = $("#chatMessages");
+  if (!chatList) return;
+  
+  // Рендерим только новые сообщения
+  if (messages.length > state.lastChatCount) {
+    const newMessages = messages.slice(state.lastChatCount);
+    newMessages.forEach((msg) => {
+      const li = document.createElement("li");
+      li.className = msg.playerId === state.playerId ? "chat-msg self" : "chat-msg";
+      li.innerHTML = `<strong>${escapeHtml(msg.playerName)}</strong><span>${escapeHtml(msg.text)}</span>`;
+      chatList.appendChild(li);
+    });
+    state.lastChatCount = messages.length;
+    chatList.scrollTop = chatList.scrollHeight;
+  }
+}
+
+async function sendChatMessage() {
+  const input = $("#chatInput");
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  try {
+    await api(`/api/rooms/${state.roomCode}/chat`, {
+      method: "POST",
+      body: { playerId: state.playerId, text },
+    });
+    fetchRoom();
+  } catch (error) {
+    setMessage(lobbyMessage, "Ошибка отправки сообщения", "error");
+  }
+}
+
 function renderLobby(room) {
   showScreen("lobby");
   $("#lobbyTitle").textContent = `#${room.code}`;
@@ -252,6 +288,9 @@ function renderLobby(room) {
   // Сбрасываем таймер при входе в лобби
   stopTimer();
   resetTimer();
+  
+  // Рендерим чат
+  renderChat(room);
 }
 
 function renderPrepare(room) {
@@ -637,6 +676,14 @@ $("#copyCodeBtn").addEventListener("click", async () => {
     } catch {
       setMessage(lobbyMessage, "Ошибка: не удалось скопировать код", "error");
     }
+  }
+});
+
+$("#chatSendBtn").addEventListener("click", sendChatMessage);
+$("#chatInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
   }
 });
 

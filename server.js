@@ -83,6 +83,7 @@ function publicRoom(room) {
       answers: round.answers,
     })),
     scoreboard: scoreboard(room),
+    messages: room.messages,
   };
 }
 
@@ -157,6 +158,7 @@ async function handleApi(req, res, url) {
         currentRound: 0,
         clipDuration,
         lastActivity: Date.now(),
+        messages: [],
       };
       rooms.set(code, room);
       sendJson(res, 201, { playerId: player.id, room: publicRoom(room) });
@@ -318,6 +320,29 @@ async function handleApi(req, res, url) {
         room.clipDuration = Math.min(30, Math.max(15, parseInt(body.clipDuration) || 30));
       }
       sendJson(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
+    const chatMatch = url.pathname.match(/^\/api\/rooms\/([A-Z0-9]+)\/chat$/);
+    if (req.method === "POST" && chatMatch) {
+      const room = requireRoom(chatMatch[1]);
+      room.lastActivity = Date.now();
+      const body = await readBody(req);
+      const player = requirePlayer(room, body.playerId);
+      const text = String(body.text || "").trim();
+      if (!text) throw httpError("Сообщение не может быть пустым.", 400);
+      if (text.length > 500) throw httpError("Сообщение слишком длинное.", 400);
+      room.messages.push({
+        playerId: player.id,
+        playerName: player.name,
+        text,
+        time: Date.now(),
+      });
+      // Храним не более 100 последних сообщений
+      if (room.messages.length > 100) {
+        room.messages = room.messages.slice(-100);
+      }
+      sendJson(res, 200, { messages: room.messages });
       return;
     }
 
